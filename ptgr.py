@@ -13,23 +13,23 @@ phone_num = config['phone_num']
 def main():
     print('Starting app... \nConnecting...')
 
-    #  connect
+    # connect client
     client = TelegramClient(phone_num, api_id, api_hash)
     client.connect()
 
-    # if user is not authorized yet
-    # send code and enter auth code
+    # if not authenticated send auth Code
+    # enter auth code to sign in
     if not client.is_user_authorized():
         client.send_code_request(phone_num)
-        client.sign_in(phone_num, input('Enter Auth Code Sent: '))
+        client.sign_in(phone_num, input('Enter Auth Code: '))
 
     if client.is_user_authorized():
         me = client.get_me()
-        print('Connected as {} !'.format(me.username))
+        print('Connected as {}'.format(me.username))
 
     # get chats
     chats = []
-    print('Fetching chats...')
+    print('Getting chats...')
     get_chats = GetDialogsRequest(
         offset_date = None,
         offset_id = 0,
@@ -41,31 +41,58 @@ def main():
     chats.extend(response.chats)
     print('Chats obtained ({})'.format(len(chats)))
 
-    # filter chats from groups
-    # chats from groups megagroup is True
+    # get groups
     groups = []
-    print('Geting groups...')
+    print('Getting groups...')
     for c in chats:
         try:
             if c.megagroup == True:
                 groups.append(c)
         except:
             continue
-    x = 0
     if not groups:
         print('No groups found!')
         return
+    x = 0
     for g in groups:
         print(str(x) + ' -- ' + g.title)
         x += 1
-    print('Choose group or press X to Exit...')
-    target_groups = []
+
+    # listen for input continuosly
     while True:
         try:
+            print('Choose group or press X to exit...')
             user_input = input('Enter number: ')
-            
+
+            # change input to int if not string
+            try:
+                u_input = int(user_input)
+            except ValueError:
+                u_input = user_input
+
+            # if input is str check if x to exit
+            if isinstance(u_input, str):
+                if u_input.upper() == 'X':
+                    print('Exiting, bye...')
+                    exit()
+                else:
+                    print('Please enter a number!\n')
+
+            # if input is int check if within group index
+            elif isinstance(u_input, int):
+                i = 0
+                valid = []
+                for i in range(x):
+                    valid.append(i)
+                    i += 1
+                if u_input in valid:
+                    target = groups[u_input]
+                    print('Getting group ( {} )\n'.format(target.title))
+                else:
+                    print('Please enter a valid number within the list!\n')
+
         except EOFError:
-            print('Something went wrong...  :(')
+            print('Something went wrong... :(')
             break
 
 
