@@ -88,6 +88,12 @@ def main():
                 if u_input in valid:
                     target = groups[u_input]
                     print('Getting group ( {} )\n'.format(target.title))
+
+                    msgs, sender = get_group_messages(client, target)
+                    
+                    for i in range(len(msgs)):
+                        print('Sender: ' + str(sender[i]) + '\nMsg: ' + str(msgs[i]))
+                    
                 else:
                     print('Please enter a valid number within the list!\n')
 
@@ -95,6 +101,22 @@ def main():
             print('Something went wrong... :(')
             break
 
+def get_group_messages(client, target):
+    # get 180 msgs
+    group_msgs = client.get_messages(target, 180)
+    msg = []
+    sender = []
+    if len(group_msgs) == 0:
+        print('Group has no messages')
+        return;
+    else:
+        print(str(len(group_msgs)) + ' messages found')
+        for msg_ in group_msgs:
+            msg.append(msg_.message)
+            sender.append(msg_.from_id)
+
+        return msg, sender
+ 
 
 if __name__ == '__main__':
     main()
